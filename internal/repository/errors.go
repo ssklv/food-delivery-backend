@@ -10,6 +10,8 @@ var (
 
 	ErrDuplicatePhone = errors.New("duplicate phone")
 	ErrDuplicateEmail = errors.New("duplicate email")
+
+	//адрес???
 )
 
 //ошибки на телефон и email

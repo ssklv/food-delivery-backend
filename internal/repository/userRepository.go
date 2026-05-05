@@ -5,6 +5,8 @@ package repository
 
 //поменять название колонки имени
 
+//адрес
+
 //дописать
 //GetByID
 //GetByEmail возможно
@@ -29,6 +31,7 @@ var userCols = []string{
 	"name",
 	"phone",
 	"email",
+	"address",
 	"password_hash",
 	"role",
 	"created_at",
@@ -47,56 +50,7 @@ func NewUserRepository(db *pgxpool.Pool, psql sq.StatementBuilderType) *usersRep
 	}
 }
 
-func (r *usersRepository) Create(ctx context.Context, user *domain.User) error {
-	sql, args, err := r.psql.
-		Insert("users").
-		Columns("name", "phone", "email", "password_hash", "role").
-		Values(user.Name, user.Phone, user.Email, user.PasswordHash, user.Role).
-		Suffix("RETURNING id, created_at, updated_at").
-		ToSql()
-
-	if err != nil {
-		return fmt.Errorf("build query: %w", err)
-	}
-
-	err = r.db.QueryRow(ctx, sql, args...).
-		Scan(
-			&user.ID,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-		)
-
-	if err != nil {
-		return fmt.Errorf("execute and scan: %w", err)
-	}
-
-	return nil
-}
-
-func (r *usersRepository) GetByPhone(ctx context.Context, phone string) (*domain.User, error) {
-	sql, args, err := r.psql.
-		Select(userCols...).
-		From("users").
-		Where(sq.Eq{"phone": phone}).
-		ToSql()
-
-	if err != nil {
-		return nil, fmt.Errorf("get user by phone: %w", err)
-	}
-
-	userRes := &domain.User{}
-	row := r.db.QueryRow(ctx, sql, args...)
-
-	if err := scanUser(row, userRes); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUserNotFound
-		}
-		return nil, fmt.Errorf("get user by phone: %w", err)
-	}
-	return userRes, nil
-}
-
-func (r *usersRepository) GetByID(ctx context.Context, id int64) (*domain.User, error) {
+func (r *usersRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	sql, args, err := r.psql.
 		Select(userCols...).
 		From("users").
@@ -115,6 +69,29 @@ func (r *usersRepository) GetByID(ctx context.Context, id int64) (*domain.User, 
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("get user by id: %w", err)
+	}
+	return userRes, nil
+}
+
+func (r *usersRepository) GetUserByPhone(ctx context.Context, phone string) (*domain.User, error) {
+	sql, args, err := r.psql.
+		Select(userCols...).
+		From("users").
+		Where(sq.Eq{"phone": phone}).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("get user by phone: %w", err)
+	}
+
+	userRes := &domain.User{}
+	row := r.db.QueryRow(ctx, sql, args...)
+
+	if err := scanUser(row, userRes); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("get user by phone: %w", err)
 	}
 	return userRes, nil
 }
@@ -179,7 +156,7 @@ func (r *usersRepository) UpdateUser(ctx context.Context, input *domain.UpdateUs
 	return user, nil
 }
 
-func (r *usersRepository) Delete() //дописать
+func (r *usersRepository) DeleteUser(ctx context.Context, id string) error //дописать
 
 func scanUser(row pgx.Row, user *domain.User) error {
 	return row.Scan(
@@ -187,6 +164,7 @@ func scanUser(row pgx.Row, user *domain.User) error {
 		&user.Name,
 		&user.Phone,
 		&user.Email,
+		//address
 		&user.PasswordHash,
 		&user.Role,
 		&user.CreatedAt,
