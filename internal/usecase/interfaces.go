@@ -10,14 +10,15 @@ import (
 type AuthRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
 	GetUserByPhone(ctx context.Context, phone string) (*domain.User, error)
-	SaveSession(ctx context.Context, session *repository.UserSession) error //refresh токен
+	SaveSession(ctx context.Context, session *repository.UserSession) error
 	DeleteSession(ctx context.Context, refreshToken string) error
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	GetSessionByToken(ctx context.Context, token string) (*repository.UserSession, error)
 }
 
+// вход
 type TokenProvider interface {
-	GenerateAccessToken(userID int64, role string) (string, error)
+	GenerateAccessToken(userID int64, role string) (string, error) //jwt строка с id и ролью
 	GenerateRefreshToken() (string, error)
 	ParseToken(tokenString string) (int64, error)
 }

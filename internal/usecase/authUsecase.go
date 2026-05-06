@@ -18,12 +18,12 @@ type authUsecase struct {
 }
 
 // func NewAuthUsecase(rep AuthRepository, tokenProvider TokenProvider, passwordHasher PasswordHasher) AuthUsecase {
-// 	return &authUsecase{
-// 		repository:     rep,
-// 		tokenProvider:  tokenProvider,
-// 		passwordHasher: passwordHasher,
-// 	}
-// }
+//  	return &authUsecase{
+//  		repository:     rep,
+//  		tokenProvider:  tokenProvider,
+//  		passwordHasher: passwordHasher,
+//  	}
+//  }
 
 func (au *authUsecase) ValidateToken(ctx context.Context, tokenString string) (*domain.User, error) {
 	userID, err := au.tokenProvider.ParseToken(tokenString)

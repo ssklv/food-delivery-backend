@@ -13,6 +13,10 @@ type TokenProvider struct {
 	accessTTL  time.Duration
 }
 
+//GenerateAccessToken(userID int64, role string) (string, error)
+//GenerateRefreshToken() (string, error)
+//ParseToken(tokenString string) (int64, error)
+
 func NewTokenProvider(key string, ttl time.Duration) *TokenProvider {
 	return &TokenProvider{
 		signingKey: []byte(key),
@@ -46,7 +50,6 @@ func (p *TokenProvider) ParseToken(tokenString string) (int64, error) {
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// В JWT числа хранятся как float64, нужно приводить к int64
 		userID := int64(claims["sub"].(float64))
 		return userID, nil
 	}
