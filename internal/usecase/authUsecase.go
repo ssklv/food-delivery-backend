@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/ssklv/food-delivery-backend/internal/domain"
-	"github.com/ssklv/food-delivery-backend/internal/repository"
+	"github.com/ssklv/food-delivery-backend/internal/infrastructure"
 )
 
 //ошибки добавить
@@ -17,13 +17,13 @@ type authUsecase struct {
 	passwordHasher PasswordHasher
 }
 
-// func NewAuthUsecase(rep AuthRepository, tokenProvider TokenProvider, passwordHasher PasswordHasher) AuthUsecase {
-//  	return &authUsecase{
-//  		repository:     rep,
-//  		tokenProvider:  tokenProvider,
-//  		passwordHasher: passwordHasher,
-//  	}
-//  }
+func NewAuthUsecase(rep AuthRepository, tokenProvider TokenProvider, passwordHasher PasswordHasher) AuthUsecase {
+	return &authUsecase{
+		repository:     rep,
+		tokenProvider:  tokenProvider,
+		passwordHasher: passwordHasher,
+	}
+}
 
 func (au *authUsecase) ValidateToken(ctx context.Context, tokenString string) (*domain.User, error) {
 	userID, err := au.tokenProvider.ParseToken(tokenString)
@@ -37,31 +37,6 @@ func (au *authUsecase) ValidateToken(ctx context.Context, tokenString string) (*
 	}
 
 	return user, nil
-}
-
-func (au *authUsecase) Register(ctx context.Context, phone, password, name string) (string, string, error) {
-	hashedPassword, err := au.passwordHasher.HashPassword(password)
-	if err != nil {
-		return "", "", fmt.Errorf("hash password: %w", err)
-	}
-
-	user := &domain.User{
-		Phone:        phone,
-		PasswordHash: hashedPassword,
-		Name:         name,
-		Role:         "user",
-	}
-
-	if err := au.repository.CreateUser(ctx, user); err != nil {
-		return "", "", fmt.Errorf("create user: %w", err)
-	}
-
-	accessToken, refreshToken, err := au.generateTokenPair(ctx, user)
-	if err != nil {
-		return "", "", fmt.Errorf("generate tokens: %w", err)
-	}
-
-	return accessToken, refreshToken, nil
 }
 
 func (au *authUsecase) generateTokenPair(ctx context.Context, user *domain.User) (string, string, error) {
@@ -86,4 +61,68 @@ func (au *authUsecase) generateTokenPair(ctx context.Context, user *domain.User)
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+// //
+func (au *authUsecase) Register(ctx context.Context, phone, password, name string) (string, string, error) {
+	hashedPassword, err := au.passwordHasher.HashPassword(password)
+	if err != nil {
+		return "", "", fmt.Errorf("reguster: hash password: %w", err)
+	}
+
+	err = validatePassword(password)
+	if err != nil {
+		return "", "", fmt.Errorf("hash password: %w", err)
+	}
+
+	err = validatePhone(phone)
+	if err != nil {
+		return "", "", fmt.Errorf("hash password: %w", err)
+	}
+
+	err = validateName(name)
+	if err != nil {
+		return "", "", fmt.Errorf("hash password: %w", err)
+	}
+
+	user := &domain.User{
+		Phone:        phone,
+		PasswordHash: hashedPassword,
+		Name:         name,
+		Role:         domain.RoleUser, ////
+	}
+
+	err = au.repository.CreateUser(ctx, user)
+	if err != nil {
+		return "", "", fmt.Errorf("create user: %w", err)
+	}
+
+	accessToken, refreshToken, err := au.generateTokenPair(ctx, user)
+	if err != nil {
+		return "", "", fmt.Errorf("generate tokens: %w", err)
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (au *authUsecase) Login (ctx context.Context, phone, password string) (string, string, error){
+	user, err := au.repository.GetUserByPhone(ctx, phone)
+	if err != nil{
+		return "", "", fmt.Errorf("hash password: %w", err)
+	}
+	
+	err = au.passwordHasher.CompareHashAndPassword(user.PasswordHash, password){
+		if err != nil{
+			return ///
+		}
+	}
+
+	accessToken, err := au.(user)
+	if err != nil{
+		return "", "", fmt.Errorf("generate tokens: %w", err)
+	}
+
+	accessToken, err := au.tokenProvider.generateTokenPair()
+
+
 }

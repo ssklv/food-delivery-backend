@@ -1,4 +1,4 @@
-package repository
+package infrastructure
 
 import (
 	"errors"
@@ -13,5 +13,3 @@ var (
 
 	//адрес???
 )
-
-//ошибки на телефон и email

@@ -10,13 +10,12 @@ import (
 const (
 	minPasswordLen = 6
 	maxNameLen     = 30
-	maxAddressLen  = 100 //
+	maxAddressLen  = 100
 	maxEmailLen    = 255
 )
 
 var phoneRegex = regexp.MustCompile(`^(?:\+7|7|8)?\d{10}$`)
 
-// ErrInvalidPasswod
 // ErrInvalindPhone
 // ErrInvalidName
 // ErrInvalidPasswodTooWeek
@@ -32,7 +31,7 @@ func validatePassword(password string) error {
 
 func validatePhone(phone string) error {
 	if !phoneRegex.MatchString(phone) {
-		return ErrInvalindPhone
+		return ErrInvalidPhone
 	}
 	return nil
 }
@@ -55,6 +54,12 @@ func validateEmail(email string) error {
 	return nil
 }
 
-func validateAddress(address string) error
+func validateAddress(address string) error {
+	count := utf8.RuneCountInString(strings.TrimSpace(address))
+	if count == 0 || count > maxAddressLen {
+		return ErrInvalidAddress
+	}
+	return nil
+}
 
 ///////////////

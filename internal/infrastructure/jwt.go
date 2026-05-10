@@ -1,4 +1,4 @@
-package identity
+package infrastructure
 
 import (
 	"crypto/rand"

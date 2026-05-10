@@ -1,4 +1,4 @@
-package repository
+package infrastructure
 
 //squirrel для построения запросов
 //pgx для работы с таблицами
@@ -31,7 +31,7 @@ var userCols = []string{
 	"name",
 	"phone",
 	"email",
-	"address",
+	"address", ///
 	"password_hash",
 	"role",
 	"created_at",
@@ -156,7 +156,28 @@ func (r *usersRepository) UpdateUser(ctx context.Context, input *domain.UpdateUs
 	return user, nil
 }
 
-func (r *usersRepository) DeleteUser(ctx context.Context, id string) error //дописать
+func (r *usersRepository) DeleteUser(ctx context.Context, id int64) error {
+	sql, args, err := r.psql.
+		Delete("users").
+		Where(sq.Eq{"id": id}).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("build delete query: %w", err)
+	}
+
+	res, err := r.db.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+
+}
 
 func scanUser(row pgx.Row, user *domain.User) error {
 	return row.Scan(
@@ -164,7 +185,7 @@ func scanUser(row pgx.Row, user *domain.User) error {
 		&user.Name,
 		&user.Phone,
 		&user.Email,
-		//address
+		&user.Address,
 		&user.PasswordHash,
 		&user.Role,
 		&user.CreatedAt,

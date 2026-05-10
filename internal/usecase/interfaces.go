@@ -4,21 +4,20 @@ import (
 	"context"
 
 	"github.com/ssklv/food-delivery-backend/internal/domain"
-	"github.com/ssklv/food-delivery-backend/internal/repository"
+	"github.com/ssklv/food-delivery-backend/internal/infrastructure"
 )
 
 type AuthRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
 	GetUserByPhone(ctx context.Context, phone string) (*domain.User, error)
-	SaveSession(ctx context.Context, session *repository.UserSession) error
+	SaveSession(ctx context.Context, session *infrastructure.UserSession) error
 	DeleteSession(ctx context.Context, refreshToken string) error
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
-	GetSessionByToken(ctx context.Context, token string) (*repository.UserSession, error)
+	GetSessionByToken(ctx context.Context, token string) (*infrastructure.UserSession, error)
 }
 
-// вход
 type TokenProvider interface {
-	GenerateAccessToken(userID int64, role string) (string, error) //jwt строка с id и ролью
+	GenerateAccessToken(userID int64, role string) (string, error)
 	GenerateRefreshToken() (string, error)
 	ParseToken(tokenString string) (int64, error)
 }
@@ -40,7 +39,7 @@ type UserRepository interface {
 }
 
 type SessionRepository interface {
-	SaveSession(ctx context.Context, session *repository.UserSession) error
+	SaveSession(ctx context.Context, session *infrastructure.UserSession) error
 	DeleteSession(ctx context.Context, refreshToken string) error
 }
 
